@@ -21,9 +21,6 @@ app = Flask(__name__)
 @app.route('/boba', methods=['GET'])
 @cross_origin()
 def get_boba():
-    url = 'https://docs.google.com/spreadsheets/d/1s_9upDvvm-TKQOJUeghcTgNj8SpZYJrsTlDrphA8NQQ/gviz/tq?tqx=out:csv&sheet=boba'
-    df = pd.read_csv(url)
-    names = list(df["Name"])
     cursor = boba_count_db.find({})
     count = {}
     for document in cursor:
@@ -31,7 +28,6 @@ def get_boba():
         boba_count = document["boba_count"]
         count[user] = boba_count
     count = {k: v for k, v in sorted(count.items(), key=lambda item: item[1], reverse=True)}
-    print(count)
     return  json.dumps(count)
 
 if __name__ == "__main__":
