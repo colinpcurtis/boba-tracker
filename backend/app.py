@@ -1,9 +1,18 @@
+from numpy import ceil
 import pandas as pd
 from flask import Flask
 from flask_cors import CORS, cross_origin
 import json
+from pymongo import MongoClient
+import os
 
 app = Flask("app")
+
+mongoclient = MongoClient(os.getenv("MONGO_URL"))
+
+db = mongoclient.boba_db
+
+boba_count_db = db.boba_count
 
 CORS(app)
 
@@ -15,7 +24,12 @@ def get_boba():
     url = 'https://docs.google.com/spreadsheets/d/1s_9upDvvm-TKQOJUeghcTgNj8SpZYJrsTlDrphA8NQQ/gviz/tq?tqx=out:csv&sheet=boba'
     df = pd.read_csv(url)
     names = list(df["Name"])
-    count = {person: names.count(person) for person in names}
+    cursor = boba_count_db.find({})
+    count = {}
+    for document in cursor:
+        user = document["user"]
+        boba_count = document["boba_count"]
+        count[user] = boba_count
     count = {k: v for k, v in sorted(count.items(), key=lambda item: item[1], reverse=True)}
     print(count)
     return  json.dumps(count)
